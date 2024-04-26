@@ -8,4 +8,5 @@
 然后是一个树状图可以用来检查
 ![image](https://github.com/WzyInCN/MFC/assets/122770024/477d56e0-169e-4fa3-8014-0e957c7dc59d)
 关于窗口还没编辑
+![image](https://github.com/WzyInCN/MFC/assets/122770024/426c0c28-43e3-4d9a-a963-1f0446a949e7)
 
