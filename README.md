@@ -4,6 +4,7 @@
 
 第一版功能：
 首先是一个自定义创建文件夹的窗口
+
 ![image](https://github.com/WzyInCN/MFC/assets/122770024/27aa8b4b-7c79-47cd-8a73-49ef167a5f7b)
 
 然后是一个树状图可以用来检查
