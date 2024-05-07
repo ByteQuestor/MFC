@@ -8,6 +8,10 @@
 #include "RepositoryDlg.h"
 #include "afxdialogex.h"
 #include "WorkDlg.h"
+#include <fstream>
+#include <string>
+#include <atlstr.h> // 包含 CString 的头文件
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -100,7 +104,31 @@ BOOL CRepositoryDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO:  在此添加额外的初始化代码
-	GetDlgItem(IDC_EDIT1)->SetWindowText(_T("王子阳"));
+	// 打开文本文件并读取内容
+	std::ifstream file("yourfile.txt"); // 替换 "yourfile.txt" 为你的 txt 文件路径
+	if (file.is_open()) {
+		CString content;
+		std::string line;
+		if (std::getline(file, line)) {
+			content = CString(line.c_str()); // 将读取到的内容存储到 content 中
+		}
+		file.close();
+		// 设置编辑控件的文本内容
+		GetDlgItem(IDC_EDIT1)->SetWindowText(content);
+	}
+	else {
+		// 如果无法打开文件，创建一个空文件
+		std::ofstream outfile("yourfile.txt"); // 替换 "yourfile.txt" 为你的 txt 文件路径
+		if (outfile.is_open()) {
+			outfile.close();
+			// 设置编辑控件的文本内容为空
+			GetDlgItem(IDC_EDIT1)->SetWindowText(_T(""));
+		}
+		else {
+			// 如果无法创建文件，输出错误信息
+			MessageBox(_T("无法创建文件"));
+		}
+	}
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -157,31 +185,52 @@ HCURSOR CRepositoryDlg::OnQueryDragIcon()
 
 void CRepositoryDlg::OnBnClickedOk()
 {
-	// TODO:  在此添加控件通知处理程序代码
 	// 获取 Edit 控件的文本内容
 	WorkDlg ToWork;
 	GetDlgItemText(IDC_EDIT1, theApp.g_Name);
-	// 创建文件夹的路径
-	CString strFolderPath;
-	strFolderPath.Format(L".\\%s", theApp.g_Name); // 在当前目录下创建文件夹，文件夹名称为 Edit 控件的文本内容
+	// 将 theApp.g_Name 以 ANSI 格式重新写入 txt 文件中
+	std::ofstream outfile("yourfile.txt"); // 替换 "yourfile.txt" 为你的 txt 文件路径
+	if (outfile.is_open()) {
+		std::string strAnsiContent(CW2A(theApp.g_Name, CP_ACP)); // 将 CString 转换为 ANSI 编码的 std::string
+		outfile << strAnsiContent; // 将内容写入文件
+		// 创建文件夹的路径
+		CString strFolderPath;
+		strFolderPath.Format(L".\\%s", theApp.g_Name); // 在当前目录下创建文件夹，文件夹名称为 Edit 控件的文本内容
+		// 创建文件夹
+		if (!CreateDirectory(strFolderPath, NULL)) {
+			// 如果无法创建文件夹，输出错误信息
+			DWORD dwError = GetLastError();
+			if (dwError == ERROR_ALREADY_EXISTS) {
+				MessageBox(_T("文件夹已存在"), _T("提示"), MB_OK | MB_ICONINFORMATION);
+			}
+			else {
+				MessageBox(_T("无法创建文件夹"), _T("错误"), MB_OK | MB_ICONERROR);
+			}
+		}
+		else
+		{
+			MessageBox(_T("知识库创建成功！"), _T("成功"), MB_OK | MB_ICONINFORMATION);
 
-	// 使用 CreateDirectory 创建文件夹
-	if (CreateDirectory(strFolderPath, NULL))
-	{
-		// 文件夹创建成功
-		MessageBox(L"知识库创建成功");
+		}
 		ToWork.DoModal();
-
+		outfile.close();
 	}
-	else if (theApp.g_Name.IsEmpty())
-	{
-		MessageBox(L"请输入知识库名称");
+	else {
+		// 如果无法打开文件，输出错误信息
+		MessageBox(_T("无法打开文件"), _T("错误"), MB_OK | MB_ICONERROR);
+		return;
 	}
-	else
-	{
-		// 文件夹创建失败
-		MessageBox(L"已存在相同知识库");
-		ToWork.DoModal();
+	std::ifstream file("yourfile.txt"); // 替换 "yourfile.txt" 为你的 txt 文件路径
+	if (file.is_open()) {
+		std::string content;
+		std::getline(file, content); // 读取一行内容
+		file.close();
+		theApp.g_Name = CString(content.c_str()); // 将读取到的内容存储到 theApp.g_Name 中
+	}
+	else {
+		// 如果无法打开文件，输出错误信息
+		MessageBox(_T("无法打开文件"), _T("错误"), MB_OK | MB_ICONERROR);
+		return;
 	}
 }
 

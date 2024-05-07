@@ -69,7 +69,7 @@ void WorkDlg::AddFolderToTree(const CString& strFolderPath, HTREEITEM hParentIte
 		{
 			CString strFileName = FindFileData.cFileName;
 
-			// 如果是文件夹，则递归处理
+			// 如果是文件夹，并且不是 "." 或 ".."，则递归处理
 			if ((FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
 				strFileName != _T(".") && strFileName != _T(".."))
 			{
@@ -77,7 +77,7 @@ void WorkDlg::AddFolderToTree(const CString& strFolderPath, HTREEITEM hParentIte
 				HTREEITEM hItem = m_tree.InsertItem(strFileName, hParentItem);
 				AddFolderToTree(strSubFolderPath, hItem);
 			}
-			else
+			else if (!(FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 			{
 				// 如果是文件，则添加到树控件中
 				m_tree.InsertItem(strFileName, hParentItem);
@@ -86,6 +86,7 @@ void WorkDlg::AddFolderToTree(const CString& strFolderPath, HTREEITEM hParentIte
 
 		FindClose(hFind);
 	}
+
 }
 
 
